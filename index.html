@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAI Evaluation Showcase | Contoso Workshop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0078D4 0%, #005a9e 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #0078D4;
+        }
+        
+        .btn-primary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Metrics note */
+        .metrics-note {
+            background: #e7f3ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #005a9e;
+        }
+        
+        /* Scenario Grid */
+        .scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .scenario-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .scenario-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .scenario-card.active {
+            border-color: #0078D4;
+            background: #f8fbff;
+        }
+        
+        .scenario-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0078D4;
+            margin-bottom: 8px;
+        }
+        
+        .scenario-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        
+        .scenario-unit {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Evaluation Panel */
+        .eval-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .prompt-selector {
+            margin-bottom: 20px;
+        }
+        
+        .prompt-selector h3 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .prompt-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .prompt-btn {
+            padding: 8px 20px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .prompt-btn:hover {
+            background: #0078D4;
+            color: white;
+        }
+        
+        .prompt-btn.active {
+            background: #0078D4;
+            color: white;
+            border-color: #0078D4;
+        }
+        
+        .run-eval {
+            background: #0078D4;
+            color: white;
+            padding: 12px 32px;
+            font-size: 1rem;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        /* Results Section */
+        .results {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .metric-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .metric-table th, .metric-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .metric-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .score-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .score-good {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .score-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .score-bad {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        @media (max-width: 768px) {
+            .scenarios {
+                grid-template-columns: 1fr;
+            }
+            .header-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 RAI Evaluation Showcase</h1>
+            <p>Azure AI Evaluation SDK - Quality & Safety Metrics</p>
+            <div style="margin-top: 8px;">
+                <label style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px;">
+                    ☐ Azure Workshop Implementation
+                </label>
+            </div>
+            <div class="header-buttons">
+                <button class="btn btn-primary" onclick="runEvaluation()">▶ Run Evaluation</button>
+                <button class="btn btn-secondary" onclick="showResults()">📊 Results</button>
+                <button class="btn btn-secondary">📚 Documentation</button>
+            </div>
+        </div>
+        
+        <div class="metrics-note">
+            ⚡ Implements Azure RAI Workshop scenarios with quality and safety metrics.
+        </div>
+        
+        <!-- Scenario Cards -->
+        <div class="scenarios">
+            <div class="scenario-card" data-scenario="furnishings" onclick="selectScenario('furnishings')">
+                <div class="scenario-title">🏠 Contoso Home Furnishings</div>
+                <div class="scenario-desc">Product descriptions</div>
+                <span class="scenario-unit">Unit 3: Quality Metrics</span>
+            </div>
+            
+            <div class="scenario-card" data-scenario="tales" onclick="selectScenario('tales')">
+                <div class="scenario-title">📖 Contoso Tales</div>
+                <div class="scenario-desc">Children's stories</div>
+                <span class="scenario-unit">Unit 4: Safety Metrics</span>
+            </div>
+            
+            <div class="scenario-card" data-scenario="gameworks" onclick="selectScenario('gameworks')">
+                <div class="scenario-title">🎮 Contoso Gameworks</div>
+                <div class="scenario-desc">Game dialogue</div>
+                <span class="scenario-unit">Unit 5: Safety + Quality</span>
+            </div>
+            
+            <div class="scenario-card" data-scenario="airways" onclick="selectScenario('airways')">
+                <div class="scenario-title">✈️ Contoso Airways</div>
+                <div class="scenario-desc">Customer support</div>
+                <span class="scenario-unit">Unit 6: Quality Metrics</span>
+            </div>
+        </div>
+        
+        <!-- Ask Wiki App (special card) -->
+        <div class="scenario-card" style="margin-bottom: 20px;" data-scenario="wiki" onclick="selectScenario('wiki')">
+            <div class="scenario-title">🔍 Ask Wiki App</div>
+            <div class="scenario-desc">Knowledge retrieval & Q&A</div>
+            <span class="scenario-unit">Unit 7: RAG Evaluation</span>
+        </div>
+        
+        <!-- Evaluation Panel -->
+        <div class="eval-panel">
+            <div class="prompt-selector">
+                <h3>Select prompt:</h3>
+                <div class="prompt-buttons">
+                    <button class="prompt-btn" data-prompt="1" onclick="selectPrompt(1)">Prompt 1: Product description</button>
+                    <button class="prompt-btn" data-prompt="2" onclick="selectPrompt(2)">Prompt 2: Customer complaint</button>
+                    <button class="prompt-btn" data-prompt="3" onclick="selectPrompt(3)">Prompt 3: General inquiry</button>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary run-eval" onclick="runEvaluation()">▶ Run Evaluation</button>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="results" class="results">
+            <h3>📊 Evaluation Results</h3>
+            <div id="results-content"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentScenario = 'furnishings';
+        let currentPrompt = 1;
+        
+        function selectScenario(scenario) {
+            currentScenario = scenario;
+            // Update active card styling
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            // Find and mark the clicked card as active
+            const clickedCard = document.querySelector(`[data-scenario="${scenario}"]`);
+            if (clickedCard) clickedCard.classList.add('active');
+            
+            // Hide results when switching scenarios
+            document.getElementById('results').classList.remove('show');
+        }
+        
+        function selectPrompt(prompt) {
+            currentPrompt = prompt;
+            document.querySelectorAll('.prompt-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-prompt="${prompt}"]`).classList.add('active');
+        }
+        
+        function runEvaluation() {
+            // Mock evaluation results based on scenario and prompt
+            const results = getMockResults(currentScenario, currentPrompt);
+            displayResults(results);
+        }
+        
+        function showResults() {
+            if (document.getElementById('results').classList.contains('show')) {
+                runEvaluation(); // Re-run if showing
+            } else {
+                runEvaluation();
+            }
+        }
+        
+        function getMockResults(scenario, prompt) {
+            // This simulates Azure AI Evaluation SDK results
+            const results = {
+                furnishings: {
+                    coherence: 4.2,
+                    fluency: 4.5,
+                    relevance: 3.8,
+                    groundedness: 4.0
+                },
+                tales: {
+                    hateSpeech: 0.2,
+                    violence: 0.5,
+                    sexualContent: 0.0,
+                    selfHarm: 0.0
+                },
+                gameworks: {
+                    coherence: 3.9,
+                    fluency: 4.1,
+                    hateSpeech: 1.2,
+                    violence: 2.0
+                },
+                airways: {
+                    coherence: 4.5,
+                    fluency: 4.7,
+                    relevance: 4.3,
+                    groundedness: 4.1
+                },
+                wiki: {
+                    accuracy: 4.4,
+                    relevance: 4.2,
+                    groundedness: 4.6
+                }
+            };
+            
+            const scenarioResults = results[scenario];
+            return { scenario, prompt, metrics: scenarioResults };
+        }
+        
+        function displayResults(results) {
+            const container = document.getElementById('results-content');
+            let html = `<p><strong>Scenario:</strong> ${results.scenario} | <strong>Prompt ${results.prompt}</strong></p>`;
+            html += '<table class="metric-table">';
+            html += '<tr><th>Metric</th><th>Score</th><th>Rating</th></tr>';
+            
+            for (const [metric, score] of Object.entries(results.metrics)) {
+                let rating = '';
+                let scoreClass = '';
+                if (score >= 4) {
+                    rating = '✅ Good';
+                    scoreClass = 'score-good';
+                } else if (score >= 2.5) {
+                    rating = '⚠️ Medium';
+                    scoreClass = 'score-warning';
+                } else {
+                    rating = '❌ Needs Improvement';
+                    scoreClass = 'score-bad';
+                }
+                
+                html += `<tr>
+                    <td><strong>${metric}</strong></td>
+                    <td>${score}</td>
+                    <td><span class="score-badge ${scoreClass}">${rating}</span></td>
+                </tr>`;
+            }
+            
+            html += '</table>';
+            container.innerHTML = html;
+            document.getElementById('results').classList.add('show');
+        }
+        
+        // Set default active scenario
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('[data-scenario="furnishings"]').classList.add('active');
+            document.querySelector('[data-prompt="1"]').classList.add('active');
+        });
+    </script>
+</body>
+</html>
