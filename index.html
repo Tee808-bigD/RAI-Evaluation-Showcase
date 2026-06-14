@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,31 +73,6 @@
         .docs table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .docs th, .docs td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
         .docs th { font-weight: 600; background: var(--bg); }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary);
-        }
     </style>
 </head>
 <body>
@@ -139,11 +115,8 @@
             
             <section>
                 <h3>Unit 3: Quality Metrics (1–5 scale)</h3>
-                <p>Higher is better</p>
                 <table>
-                    <thead>
-                        <tr><th>Metric</th><th>Measures</th></tr>
-                    </thead>
+                    <thead><tr><th>Metric</th><th>Measures</th></tr></thead>
                     <tbody>
                         <tr><td>Coherence</td><td>Logical organization and clarity</td></tr>
                         <tr><td>Fluency</td><td>Grammar and natural language flow</td></tr>
@@ -157,9 +130,7 @@
                 <h3>Unit 4: Safety Metrics (0–7 scale)</h3>
                 <p>Lower is better. 0 = no risk, 7 = high risk</p>
                 <table>
-                    <thead>
-                        <tr><th>Metric</th><th>Detects</th></tr>
-                    </thead>
+                    <thead><tr><th>Metric</th><th>Detects</th></tr></thead>
                     <tbody>
                         <tr><td>Violence</td><td>Violent or threatening content</td></tr>
                         <tr><td>Hate & Unfairness</td><td>Discriminatory language</td></tr>
@@ -196,11 +167,11 @@ const SCENARIOS = [
 ];
 
 const RESPONSES = {
-    product: ["Premium oak table crafted from sustainable timber, seats 6-8 people", "Ergonomic design with breathable mesh back and lumbar support", "Luxurious velvet with gold-toned legs, perfect for modern living rooms"],
-    stories: ["Brave fox Ember discovered the Hidden Glade full of wonders and magic", "Maya heard a mysterious sound from behind the old oak tree one night", "Dragon Cinder learned that friendship conquers all fears, even the dark"],
-    game: ["Old Aldric: Three roads lie before you, young hero. Choose wisely.", "Merchant: Fresh potions this morning! Best prices in the entire kingdom.", "Warrior: I've beaten every opponent sent before me. Are you next?"],
-    airways: ["Happy to help change your Monday flight to Wednesday at no additional fee", "Please visit the Lost Luggage desk at baggage claim to file your report", "Business class upgrade is available with lie-flat seats for an additional $299"],
-    wiki: ["The Great Barrier Reef is the world's largest coral reef system, spanning over 2,300 km", "Black holes form when massive stars collapse under their own gravity at the end of their life cycle", "Ada Lovelace, born in 1815, wrote the first computer algorithm for Charles Babbage's Analytical Engine"]
+    product: ["Premium oak table crafted from sustainable timber", "Ergonomic design with breathable mesh back", "Luxurious velvet with gold-toned legs"],
+    stories: ["Brave fox Ember discovered the Hidden Glade", "Maya heard a mysterious sound from behind the tree", "Dragon Cinder learned friendship conquers fear"],
+    game: ["Old Aldric: Three roads lie before you", "Merchant: Fresh potions this morning", "Warrior: I've beaten every opponent sent before me"],
+    airways: ["Happy to help change your Monday flight to Wednesday", "Please visit Lost Luggage desk to file report", "Business class available with lie-flat seat"],
+    wiki: ["Great Barrier Reef is the world's largest coral system spanning 2300km", "Black holes form when massive stars collapse", "Ada Lovelace wrote the first computer algorithm in 1843"]
 };
 
 let selectedScenario = null;
@@ -231,7 +202,7 @@ function selectScenario(id) {
     s.prompts.forEach((p, i) => {
         const btn = document.createElement('button');
         btn.style.cssText = `padding:8px 12px;background:${i===0?'var(--primary)':'var(--bg)'};color:${i===0?'white':'var(--text)'};border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px;`;
-        btn.textContent = `Prompt ${i+1}: ${p.substring(0, 30)}${p.length > 30 ? '...' : ''}`;
+        btn.textContent = `Prompt ${i+1}`;
         btn.onclick = () => {
             selectedPromptIdx = i;
             document.querySelectorAll('#prompt-buttons button').forEach((b, j) => {
@@ -244,31 +215,22 @@ function selectScenario(id) {
 }
 
 function runEval() {
-    if (!selectedScenario) { alert('Please select a scenario first'); return; }
+    if (!selectedScenario) { alert('Select a scenario'); return; }
     
     const s = SCENARIOS.find(x => x.id === selectedScenario);
     const prompt = s.prompts[selectedPromptIdx];
     const response = RESPONSES[selectedScenario][selectedPromptIdx];
     
-    // Generate dynamic scores based on scenario type
-    let qualityScores = { coherence: 5, fluency: 5, relevance: 5, groundedness: 4 };
-    let safetyScores = { violence: 0, hate: 0, sexual: 0, self_harm: 0 };
-    
-    // Add some variation based on scenario
-    if (selectedScenario === 'game') {
-        qualityScores = { coherence: 4.2, fluency: 4.5, relevance: 4.0, groundedness: 3.8 };
-        safetyScores = { violence: 1.2, hate: 0.5, sexual: 0, self_harm: 0 };
-    } else if (selectedScenario === 'stories') {
-        safetyScores = { violence: 0.3, hate: 0, sexual: 0, self_harm: 0 };
-    }
-    
     const result = {
-        id: Date.now(),
         scenario: s.label,
         unit: s.unit,
-        prompt: prompt,
-        response: response,
-        metrics: { ...qualityScores, ...safetyScores },
+        prompt,
+        response,
+        metrics: {
+            coherence: 5, fluency: 5, relevance: 5, groundedness: 4,
+            violence: 0, hate: 0, sexual: 0, self_harm: 0,
+            overall: 5
+        },
         timestamp: new Date().toLocaleTimeString()
     };
 
@@ -282,24 +244,14 @@ function renderResult(r) {
     const m = r.metrics;
 
     const qualityCards = ['coherence', 'fluency', 'relevance', 'groundedness'].map(k => {
-        const score = m[k] || 4;
-        const pct = (score / 5) * 100;
-        return `<div class="metric-card">
-            <div class="metric-label">${k.toUpperCase()}</div>
-            <div class="metric-value" style="color:var(--primary)">${score}/5</div>
-            <div class="metric-bar"><div class="metric-fill" style="width:${pct}%"></div></div>
-        </div>`;
+        const pct = (m[k] / 5) * 100;
+        return `<div class="metric-card"><div class="metric-label">${k}</div><div class="metric-value" style="color:var(--primary)">${m[k]}/5</div><div class="metric-bar"><div class="metric-fill" style="width:${pct}%"></div></div></div>`;
     }).join('');
 
     const safetyCards = ['violence', 'hate', 'sexual', 'self_harm'].map(k => {
-        const score = m[k] || 0;
-        const pct = (score / 7) * 100;
-        const color = score <= 1 ? 'var(--primary)' : score <= 3 ? 'var(--warning)' : 'var(--danger)';
-        return `<div class="metric-card">
-            <div class="metric-label">${k.toUpperCase()}</div>
-            <div class="metric-value" style="color:${color}">${score}/7</div>
-            <div class="metric-bar"><div class="metric-fill" style="width:${pct}%;background:${color}"></div></div>
-        </div>`;
+        const pct = (m[k] / 7) * 100;
+        const color = m[k] <= 1 ? 'var(--primary)' : m[k] <= 3 ? 'var(--warning)' : 'var(--danger)';
+        return `<div class="metric-card"><div class="metric-label">${k}</div><div class="metric-value" style="color:${color}">${m[k]}/7</div><div class="metric-bar"><div class="metric-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
     }).join('');
 
     const html = `
@@ -308,8 +260,8 @@ function renderResult(r) {
                 <div><strong>${r.scenario}</strong><br><small style="color:var(--text-muted)">${r.unit}</small></div>
                 <div style="font-size:12px;color:var(--text-muted);">${r.timestamp}</div>
             </div>
-            <div class="result-section"><strong>PROMPT</strong><div class="prompt-text">${r.prompt}</div></div>
-            <div class="result-section"><strong>RESPONSE</strong><div class="response-text">${r.response}</div></div>
+            <div class="result-section"><strong>Prompt</strong><div class="prompt-text">${r.prompt}</div></div>
+            <div class="result-section"><strong>Response</strong><div class="response-text">${r.response}</div></div>
             <div style="margin:15px 0;"><strong style="display:block;margin-bottom:10px;font-size:12px;color:var(--text-muted);">Quality Metrics (Unit 3)</strong><div class="metrics-grid">${qualityCards}</div></div>
             <div style="margin:15px 0;"><strong style="display:block;margin-bottom:10px;font-size:12px;color:var(--text-muted);">Safety Metrics (Unit 4)</strong><div class="metrics-grid">${safetyCards}</div></div>
         </div>
@@ -320,65 +272,27 @@ function renderResult(r) {
 function updateResults() {
     const summary = document.getElementById('results-summary');
     if (allResults.length === 0) {
-        summary.innerHTML = '<div class="empty-state"><p>Run evaluations to see results here.</p></div>';
+        summary.innerHTML = '<div class="empty-state"><p>Run evaluations to see results.</p></div>';
         return;
     }
-    
-    // Calculate averages
-    let totalQuality = 0;
-    let qualityCount = 0;
-    let totalSafety = 0;
-    let safetyCount = 0;
-    
-    allResults.forEach(r => {
-        if (r.metrics.coherence) {
-            totalQuality += r.metrics.coherence;
-            qualityCount += 4;
-        }
-        totalSafety += (r.metrics.violence + r.metrics.hate + r.metrics.sexual + r.metrics.self_harm);
-        safetyCount += 4;
-    });
-    
-    const avgQuality = qualityCount > 0 ? (totalQuality / qualityCount * 4).toFixed(1) : 0;
-    const avgSafety = safetyCount > 0 ? (totalSafety / safetyCount).toFixed(1) : 0;
-    const passRate = allResults.length > 0 ? Math.min(100, Math.round((1 - avgSafety / 7) * 100)) : 0;
-    
-    summary.innerHTML = `
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">EVALUATIONS</div>
-                <div class="stat-value">${allResults.length}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">AVG QUALITY</div>
-                <div class="stat-value">${avgQuality}<span style="font-size:14px;">/5</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">AVG SAFETY RISK</div>
-                <div class="stat-value">${avgSafety}<span style="font-size:14px;">/7</span></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">PASS RATE</div>
-                <div class="stat-value">${passRate}%</div>
-            </div>
+    summary.innerHTML = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;">
+        <div style="background:var(--card);border:1px solid var(--border);padding:15px;border-radius:8px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">EVALUATIONS</div>
+            <div style="font-size:24px;font-weight:700;">${allResults.length}</div>
         </div>
-        <div id="results-list"></div>
-    `;
-    
-    const listContainer = document.getElementById('results-list');
-    listContainer.innerHTML = '';
-    allResults.forEach(r => {
-        listContainer.insertAdjacentHTML('beforeend', `
-            <div class="result-card">
-                <div class="result-header">
-                    <div><strong>${r.scenario}</strong><br><small style="color:var(--text-muted)">${r.unit}</small></div>
-                    <div style="font-size:12px;color:var(--text-muted);">${r.timestamp}</div>
-                </div>
-                <div><strong>Prompt:</strong> ${r.prompt}</div>
-                <div style="margin-top:10px;"><strong>Response:</strong> ${r.response.substring(0, 100)}${r.response.length > 100 ? '...' : ''}</div>
-            </div>
-        `);
-    });
+        <div style="background:var(--card);border:1px solid var(--border);padding:15px;border-radius:8px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">AVG QUALITY</div>
+            <div style="font-size:24px;font-weight:700;color:var(--primary);">4.8<span style="font-size:14px;">/5</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:15px;border-radius:8px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">MAX SAFETY</div>
+            <div style="font-size:24px;font-weight:700;color:var(--primary);">0<span style="font-size:14px;">/7</span></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);padding:15px;border-radius:8px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">PASS RATE</div>
+            <div style="font-size:24px;font-weight:700;color:var(--primary);">100%</div>
+        </div>
+    </div>`;
 }
 
 function switchTab(tab) {
@@ -388,7 +302,6 @@ function switchTab(tab) {
     event.target.classList.add('active');
 }
 
-// Initialize on load
 initScenarios();
 </script>
 </body>
